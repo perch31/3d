@@ -25,4 +25,47 @@ function animate() {
   cube.rotation.y += 0.01;
   renderer.render(scene, camera);
 }
+animate();// Oyuncu Küpü
+const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
+const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const player = new THREE.Mesh(playerGeometry, playerMaterial);
+scene.add(player);
+player.position.y = 0.5; // yere koy
+
+// Hareket Değişkenleri
+let moveX = 0;
+let moveY = 0;
+
+// Joystick Başlat
+const joystick = nipplejs.create({
+  zone: document.getElementById('joystickZone'),
+  mode: 'static',
+  position: { left: '50px', bottom: '50px' },
+  color: 'white'
+});
+
+joystick.on('move', (evt, data) => {
+  const angle = data.angle.degree;
+  const force = data.force;
+
+  // X, Z eksenine dönüştür
+  const rad = angle * (Math.PI / 180);
+  moveX = Math.cos(rad) * force * 0.05;
+  moveY = Math.sin(rad) * force * 0.05;
+});
+
+joystick.on('end', () => {
+  moveX = 0;
+  moveY = 0;
+});
+
+// Animasyon Döngüsünde Oyuncuyu Hareket Ettir
+function animate() {
+  requestAnimationFrame(animate);
+
+  player.position.x += moveX;
+  player.position.z += moveY;
+
+  renderer.render(scene, camera);
+}
 animate();
