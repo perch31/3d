@@ -1,98 +1,52 @@
-// === Sahne kurulumu ===
+import * as THREE from 'https://cdn.skypack.dev/three@0.152.2';
+import { GLTFLoader } from 'https://cdn.skypack.dev/three/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'https://cdn.skypack.dev/three/examples/jsm/controls/OrbitControls.js';
+
+// Renderer ve sahne ayarları
 const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb); // gökyüzü rengi
+
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("gameCanvas"), antialias: true });
+camera.position.set(0, 1.6, 5);
+
+const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#gameCanvas'), antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
 
-// === Işıklar ===
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
-scene.add(hemiLight);
+// Işık
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5, 10, 7.5);
+scene.add(light);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-dirLight.position.set(5, 10, 7.5);
-dirLight.castShadow = true;
-scene.add(dirLight);
-
-// === Zemin ===
-const planeGeo = new THREE.PlaneGeometry(200, 200);
-const planeMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
-const ground = new THREE.Mesh(planeGeo, planeMat);
+// Zemin
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(100, 100),
+  new THREE.MeshStandardMaterial({ color: 0x228B22 })
+);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// === Oyuncu (küre veya kutu) ===
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-const player = new THREE.Mesh(geometry, material);
-player.castShadow = true;
-player.position.set(0, 0.5, 0);
-scene.add(player);
-
-// === Kamera pozisyonu ===
-camera.position.set(0, 5, 10);
-camera.lookAt(player.position);
-
-// === Joystick ayarı ===
-let moveX = 0;
-let moveZ = 0;
-
-const joystick = nipplejs.create({
-  zone: document.getElementById("joystickZone"),
-  mode: "static",
-  position: { left: "75px", bottom: "75px" },
-  color: "white"
+// Oyuncu modeli yükleyici
+const loader = new GLTFLoader();
+let player;
+loader.load('assets/models/player.glb', function (gltf) {
+  player = gltf.scene;
+  player.scale.set(1, 1, 1);
+  player.position.set(0, 0, 0);
+  scene.add(player);
+}, undefined, function (error) {
+  console.error('Model yüklenemedi:', error);
 });
 
-joystick.on("move", (evt, data) => {
-  const angle = data.angle.radian;
-  moveX = Math.cos(angle) * 0.2;
-  moveZ = Math.sin(angle) * 0.2;
-});
+// Kamera kontrolü
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 1, 0);
+controls.update();
 
-joystick.on("end", () => {
-  moveX = 0;
-  moveZ = 0;
-});
-
-// === Model Yükleme (hazırlık, dosya yoksa küp kullanılır) ===
-const loader = new THREE.GLTFLoader();
-let modelLoaded = false;
-
-loader.load("player.glb", (gltf) => {
-  scene.remove(player);
-  const model = gltf.scene;
-  model.scale.set(1, 1, 1);
-  model.position.copy(player.position);
-  model.castShadow = true;
-  scene.add(model);
-  player.model = model;
-  modelLoaded = true;
-}, undefined, (error) => {
-  console.error("Model yüklenemedi:", error);
-});
-
-// === Oyun döngüsü ===
+// Render döngüsü
 function animate() {
   requestAnimationFrame(animate);
-
-  // Oyuncuyu hareket ettir
-  player.position.x += moveX;
-  player.position.z += moveZ;
-
-  // Eğer model yüklüyse onu da hareket ettir
-  if (modelLoaded && player.model) {
-    player.model.position.copy(player.position);
-  }
-
-  // Kamera oyuncuyu takip eder
-  camera.position.x = player.position.x;
-  camera.position.z = player.position.z + 10;
-  camera.lookAt(player.position);
-
   renderer.render(scene, camera);
 }
-
 animate();
