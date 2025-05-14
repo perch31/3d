@@ -1,23 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Arena Clash 3D</title>
-  <link rel="stylesheet" href="style.css">
 
-  <!-- Three.js -->
+  <!-- Stil -->
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    #gameCanvas {
+      display: block;
+    }
+    #joystickZone {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 150px;
+      height: 150px;
+      z-index: 10;
+    }
+  </style>
+
+  <!-- Three.js ve eklentiler -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <!-- Nipple.js (Joystick kütüphanesi) -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
+
+  <!-- Joystick kütüphanesi -->
   <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
+  <div id="joystickZone"></div>
 
-  <!-- Joystick alanı -->
-  <div id="joystickZone" style="position: absolute; bottom: 50px; left: 50px; width: 150px; height: 150px;"></div>
-
-  <!-- Oyun scripti -->
+  <!-- Oyun kodu -->
   <script src="game.js"></script>
 </body>
 </html>
